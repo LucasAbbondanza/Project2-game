@@ -1,6 +1,4 @@
-package walker;
-
-import com.lucasabbondanza.android.project2.walker.R;
+package com.lucasabbondanza.android.spaceshooter;
 
 public class AlienSprite extends Sprite {
 

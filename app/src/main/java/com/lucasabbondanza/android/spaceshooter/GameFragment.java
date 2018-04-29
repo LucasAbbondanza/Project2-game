@@ -1,7 +1,6 @@
-package walker;
+package com.lucasabbondanza.android.spaceshooter;
 
 import android.support.v4.app.Fragment;
-import android.app.ActionBar;
 import android.graphics.SurfaceTexture;
 import android.os.Bundle;
 import android.view.MotionEvent;
@@ -10,7 +9,6 @@ import android.view.View;
 import android.support.annotation.Nullable;
 import android.view.ViewGroup;
 import android.content.Context;
-import com.lucasabbondanza.android.project2.walker.R;
 
 public class GameFragment extends Fragment {
 

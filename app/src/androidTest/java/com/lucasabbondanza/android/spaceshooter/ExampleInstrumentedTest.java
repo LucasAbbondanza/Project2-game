@@ -1,4 +1,4 @@
-package com.lucasabbondanza.android.project2;
+package com.lucasabbondanza.android.spaceshooter;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;

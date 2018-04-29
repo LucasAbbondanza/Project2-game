@@ -1,4 +1,4 @@
-package com.lucasabbondanza.android.project2;
+package com.lucasabbondanza.android.spaceshooter;
 
 import org.junit.Test;
 

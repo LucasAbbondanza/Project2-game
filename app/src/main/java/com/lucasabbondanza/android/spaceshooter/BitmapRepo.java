@@ -1,4 +1,4 @@
-package walker;
+package com.lucasabbondanza.android.spaceshooter;
 
 import android.content.Context;
 import android.graphics.Bitmap;

@@ -1,11 +1,8 @@
-package walker;
+package com.lucasabbondanza.android.spaceshooter;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
 import android.view.MotionEvent;
-import com.lucasabbondanza.android.project2.walker.R;
 
 import java.util.ArrayList;
 import java.util.List;

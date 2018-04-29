@@ -1,10 +1,8 @@
-package walker;
+package com.lucasabbondanza.android.spaceshooter;
 
 import android.graphics.Canvas;
 import android.graphics.PointF;
-import android.graphics.Rect;
 import android.graphics.RectF;
-import android.util.Log;
 
 /**
  * Created by shaffer on 4/27/16.

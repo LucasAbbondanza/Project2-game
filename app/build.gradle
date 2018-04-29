@@ -3,7 +3,7 @@ apply plugin: 'com.android.application'
 android {
     compileSdkVersion 27
     defaultConfig {
-        applicationId "cs383.wc.edu.walker"
+        applicationId "com.lucasabbondanza.android.spaceshooter"
         minSdkVersion 26
         targetSdkVersion 27
         versionCode 1

@@ -1,7 +1,4 @@
-package walker;
-
-import android.graphics.PointF;
-import android.util.Log;
+package com.lucasabbondanza.android.spaceshooter;
 
 /**
  * Created by shaffer on 4/28/16.
