@@ -17,14 +17,14 @@ public class PlayerSprite extends Sprite {
     private void loadBitmaps() {
         BitmapRepo r = BitmapRepo.getInstance();
         BitmapSequence s = new BitmapSequence();
-        s.addImage(r.getImage(R.drawable.stickman1), 0.1);
-        s.addImage(r.getImage(R.drawable.stickman2), 0.1);
-        s.addImage(r.getImage(R.drawable.stickman3), 0.1);
-        s.addImage(r.getImage(R.drawable.stickman2), 0.1);
+        s.addImage(r.getImage(R.drawable.player), 0.1);
+       // s.addImage(r.getImage(R.drawable.player), 0.1);
+       // s.addImage(r.getImage(R.drawable.player), 0.1);
+        //s.addImage(r.getImage(R.drawable.player), 0.1);
         setBitmaps(s);
 
         deadSequence = new BitmapSequence();
-        deadSequence.addImage(r.getImage(R.drawable.dead_stickman), 100);
+        deadSequence.addImage(r.getImage(R.drawable.boom), 100);
     }
 
     @Override

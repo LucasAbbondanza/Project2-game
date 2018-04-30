@@ -2,9 +2,8 @@ package walker;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
 import android.view.MotionEvent;
+
 import com.lucasabbondanza.android.project2.walker.R;
 
 import java.util.ArrayList;
@@ -16,11 +15,11 @@ class World {
 
     public World() {
         sprites = new ArrayList<>();
-        sprites.add(player = new PlayerSprite(new Vec2d(100,1000)));
-        sprites.add(new AlienSprite(new Vec2d(500, 100)));
-        sprites.add(new AlienSprite(new Vec2d(300, 100)));
-        sprites.add(new AlienSprite(new Vec2d(-200, 100)));
-        sprites.add(new AlienSprite(new Vec2d(700, 100)));
+        sprites.add(player = new PlayerSprite(new Vec2d(200,500)));
+        sprites.add(new AlienSprite(new Vec2d(3000, 100)));
+        sprites.add(new AlienSprite(new Vec2d(3000, 550)));
+        sprites.add(new AlienSprite(new Vec2d(3000, 1000)));
+        //sprites.add(new AlienSprite(new Vec2d(700, 100)));
     }
 
     public void tick(double dt) {

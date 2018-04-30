@@ -1,23 +1,21 @@
 package walker;
 
-import android.content.Context;
-import android.content.Intent;
+import android.app.ActionBar;
 import android.graphics.SurfaceTexture;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
+import android.support.v7.app.AppCompatActivity;
+import android.view.MotionEvent;
 import android.view.TextureView;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ImageButton;
 
 import com.lucasabbondanza.android.project2.walker.R;
 
-public class GameFragment extends Fragment implements View.OnClickListener{
+
+public class GameActivity extends AppCompatActivity {
+
 
     private TextureView textureView;
     private Thread renderLoopThread;
-    private Context context;
 
     private TextureView.SurfaceTextureListener textureListener = new TextureView.SurfaceTextureListener() {
 
@@ -61,21 +59,12 @@ public class GameFragment extends Fragment implements View.OnClickListener{
         renderLoopThread.start();
     }
 
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-    }
-
-    @Nullable
     @Override
-    public View onCreateView(android.view.LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.start_game, container, false);
-        BitmapRepo.getInstance().setContext(context);
-        //getting the button
-        ImageButton buttonPlay = view.findViewById(R.id.buttonPlay);
-
-        //adding a click listener
-        buttonPlay.setOnClickListener(this);
-        /*textureView = view.findViewById(R.id.texture_view);
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.fragment_game);
+        BitmapRepo.getInstance().setContext(this);
+        textureView = findViewById(R.id.texture_view);
         textureView.setSurfaceTextureListener(textureListener);
         textureView.setOnTouchListener(new View.OnTouchListener() {
             @Override
@@ -83,26 +72,21 @@ public class GameFragment extends Fragment implements View.OnClickListener{
                 TouchEventQueue.getInstance().enqueue(event);
                 return true;
             }
-        });*/
-        return view;
+        });
+        goFullScreen();
     }
 
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        this.context = context;
+    // See https://developer.android.com/training/system-ui/status
+    private void goFullScreen() {
+        View decorView = getWindow().getDecorView();
+        // Hide the status bar.
+        int uiOptions = View.SYSTEM_UI_FLAG_FULLSCREEN;
+        decorView.setSystemUiVisibility(uiOptions);
+        // Remember that you should never show the action bar if the
+        // status bar is hidden, so hide that too if necessary.
+        ActionBar actionBar = getActionBar();
+        if (actionBar != null) actionBar.hide();
     }
 
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        context = null;
-    }
 
-    @Override
-    public void onClick(View v) {
-        //starting game activity
-        //LayoutInflater inflater = LayoutInflater.from(getActivity());
-        startActivity(new Intent(getActivity(), GameActivity.class));
-    }
 }
