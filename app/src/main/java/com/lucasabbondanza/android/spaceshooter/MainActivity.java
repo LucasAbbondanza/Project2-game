@@ -1,10 +1,9 @@
-package walker;
+package com.lucasabbondanza.android.spaceshooter;
 
 import android.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
-import com.lucasabbondanza.android.project2.walker.R;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.Fragment;
 
@@ -18,12 +17,11 @@ public class MainActivity extends AppCompatActivity {
         FragmentManager fm = getSupportFragmentManager();
         Fragment fragment = fm.findFragmentById(R.id.fragment_container);
         if (fragment == null) {
-            fragment = new GameFragment();
+            fragment = new MainMenuFragment();
             fm.beginTransaction()
-                    .add(R.id.fragment_container, fragment, "Game_Fragment")
+                    .add(R.id.fragment_container, fragment, "Main_Menu")
                     .commit();
         }
-
         goFullScreen();
     }
 

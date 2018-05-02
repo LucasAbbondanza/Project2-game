@@ -1,8 +1,7 @@
-package walker;
+package com.lucasabbondanza.android.spaceshooter;
 
 import android.view.MotionEvent;
 
-import java.util.ArrayList;
 import java.util.LinkedList;
 
 /**

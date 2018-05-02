@@ -1,14 +1,12 @@
-package walker;
-
-import com.lucasabbondanza.android.project2.walker.R;
+package com.lucasabbondanza.android.spaceshooter;
 
 public class AlienSprite extends Sprite {
 
     private static final int velocityX = -300;
-    private static final int velocityY = 300;
+    private static final int velocityY = 0;
 
 
-    public AlienSprite(Vec2d p) {
+    AlienSprite(Vec2d p) {
         super(p);
         loadBitmaps();
     }
@@ -16,8 +14,8 @@ public class AlienSprite extends Sprite {
     private void loadBitmaps() {
         BitmapRepo r = BitmapRepo.getInstance();
         BitmapSequence s = new BitmapSequence();
-        s.addImage(r.getImage(R.drawable.aliengreen_walk1), 0.1);
-        s.addImage(r.getImage(R.drawable.aliengreen_walk2), 0.1);
+        s.addImage(r.getImage(R.drawable.enemy), 0.1);
+        s.addImage(r.getImage(R.drawable.enemy), 0.1);
         setBitmaps(s);
 
     }

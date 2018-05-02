@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context="walker.MainActivity">
+    tools:context="com.lucasabbondanza.android.spaceshooter.MainActivity">
 
     <TextureView
         android:id="@+id/texture_view"
