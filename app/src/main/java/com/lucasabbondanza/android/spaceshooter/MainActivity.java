@@ -19,10 +19,9 @@ public class MainActivity extends AppCompatActivity {
         if (fragment == null) {
             fragment = new MainMenuFragment();
             fm.beginTransaction()
-                    .add(R.id.fragment_container, fragment, "Main_Manu")
+                    .add(R.id.fragment_container, fragment, "Main_Menu")
                     .commit();
         }
-
         goFullScreen();
     }
 
