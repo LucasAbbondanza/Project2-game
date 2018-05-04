@@ -4,23 +4,24 @@ import com.lucasabbondanza.android.project2.walker.R;
 
 public class PlayerSprite extends Sprite {
 
-    private static final int velocity = 0;
-    private boolean dead;
+    private static final int velocity = 400;
+    public static boolean dead;
     private BitmapSequence deadSequence;
+    private BitmapSequence s;
+    private int numberOfDead = 0;
 
     public PlayerSprite(Vec2d v) {
         super(v);
         dead = false;
+        if (numberOfDead < 3)
+            makealive();
         loadBitmaps();
     }
 
     private void loadBitmaps() {
         BitmapRepo r = BitmapRepo.getInstance();
-        BitmapSequence s = new BitmapSequence();
+        s = new BitmapSequence();
         s.addImage(r.getImage(R.drawable.player), 0.1);
-       // s.addImage(r.getImage(R.drawable.player), 0.1);
-       // s.addImage(r.getImage(R.drawable.player), 0.1);
-        //s.addImage(r.getImage(R.drawable.player), 0.1);
         setBitmaps(s);
 
         deadSequence = new BitmapSequence();
@@ -36,7 +37,7 @@ public class PlayerSprite extends Sprite {
     public void tick(double dt) {
         super.tick(dt);
         checkForTouch();
-        setPosition(getPosition().add(new Vec2d((float)(velocity*dt), 0)));
+        setPosition(getPosition().add(new Vec2d((float)(0), 0)));
     }
 
     private void checkForTouch() {
@@ -50,5 +51,11 @@ public class PlayerSprite extends Sprite {
     private void makeDead() {
         dead = true;
         setBitmaps(deadSequence);
+        numberOfDead +=1;
+        // gameover.start();
+    }
+    private void makealive() {
+        dead = false;
+        setBitmaps(s);
     }
 }
