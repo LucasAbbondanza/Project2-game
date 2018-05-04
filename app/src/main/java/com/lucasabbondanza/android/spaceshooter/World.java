@@ -13,19 +13,19 @@ class World {
 
     public World() {
         sprites = new ArrayList<>();
-        sprites.add(player = new PlayerSprite(new Vec2d(100,1000)));
-        sprites.add(new AlienSprite(new Vec2d(500, 100)));
-        sprites.add(new AlienSprite(new Vec2d(300, 100)));
-        sprites.add(new AlienSprite(new Vec2d(-200, 100)));
-        sprites.add(new AlienSprite(new Vec2d(700, 100)));
+        sprites.add(new EnemySprite(new Vec2d(100, 100)));
+        sprites.add(new EnemySprite(new Vec2d(1000, 100)));
+        //The player needs to be the last sprite added so it is drawn on top of most things
+        sprites.add(player = new PlayerSprite(new Vec2d(500,2000)));
     }
 
     public void tick(double dt) {
         MotionEvent e = TouchEventQueue.getInstance().dequeue();
         if (e != null)
             handleMotionEvent(e);
-        for(Sprite s: sprites)
+        for(Sprite s: sprites) {
             s.tick(dt);
+        }
         resolveCollisions();
     }
 
@@ -43,25 +43,27 @@ class World {
         for(Collision c: collisions) c.resolve();
     }
 
-
-    /**
-     * When the user touches the screen, this message is sent.  Probably you
-     * want to tell the player to do something?
-     *
-     * @param e the MotionEvent corresponding to the touch
-     */
     private void handleMotionEvent(MotionEvent e) {
-
+        if(e.getY() > 1200) {
+            if (e.getActionMasked() == MotionEvent.ACTION_UP)
+                player.stop();
+            else {
+                player.move(e.getX());
+            }
+        } else {
+            player.fire(!player.isShooting());
+        }
     }
 
     public void draw(Canvas c) {
         Bitmap bg = BitmapRepo.getInstance().getImage(R.drawable.background);
-        float x = player.getPosition().getX();
-        c.translate(-x+100, 0);
-        int backgroundNumber = (int)(x / bg.getWidth());
-        c.drawBitmap(bg, bg.getWidth()*(backgroundNumber-1), 0,  null);
-        c.drawBitmap(bg, bg.getWidth()*backgroundNumber, 0,  null);
-        c.drawBitmap(bg, bg.getWidth()*(backgroundNumber+1), 0,  null);
+        float y = player.getPosition().getY();
+        if(!player.isDead())
+            c.translate(0, -y+2000);
+        int backgroundNumber = (int)(y / bg.getHeight());
+        c.drawBitmap(bg, 0, bg.getHeight()*(backgroundNumber-1),  null);
+        c.drawBitmap(bg, 0, bg.getHeight()*backgroundNumber,  null);
+        c.drawBitmap(bg, 0, bg.getHeight()*(backgroundNumber+1),  null);
         for(Sprite s: sprites)
             s.draw(c);
     }
