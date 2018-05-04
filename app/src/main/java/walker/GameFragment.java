@@ -3,6 +3,7 @@ package walker;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.SurfaceTexture;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -17,6 +18,7 @@ public class GameFragment extends Fragment implements View.OnClickListener{
 
     private TextureView textureView;
     private Thread renderLoopThread;
+    public static MediaPlayer gameOnsound ;
     private Context context;
 
     private TextureView.SurfaceTextureListener textureListener = new TextureView.SurfaceTextureListener() {
@@ -72,18 +74,11 @@ public class GameFragment extends Fragment implements View.OnClickListener{
         BitmapRepo.getInstance().setContext(context);
         //getting the button
         ImageButton buttonPlay = view.findViewById(R.id.buttonPlay);
-
+        //adding a sound
+        gameOnsound= MediaPlayer.create(context, R.raw.gameon);
         //adding a click listener
         buttonPlay.setOnClickListener(this);
-        /*textureView = view.findViewById(R.id.texture_view);
-        textureView.setSurfaceTextureListener(textureListener);
-        textureView.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                TouchEventQueue.getInstance().enqueue(event);
-                return true;
-            }
-        });*/
+        gameOnsound.start();
         return view;
     }
 
@@ -102,7 +97,7 @@ public class GameFragment extends Fragment implements View.OnClickListener{
     @Override
     public void onClick(View v) {
         //starting game activity
-        //LayoutInflater inflater = LayoutInflater.from(getActivity());
         startActivity(new Intent(getActivity(), GameActivity.class));
+        gameOnsound.stop();
     }
 }

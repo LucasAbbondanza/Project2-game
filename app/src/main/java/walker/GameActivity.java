@@ -2,6 +2,7 @@ package walker;
 
 import android.app.ActionBar;
 import android.graphics.SurfaceTexture;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.MotionEvent;
@@ -16,6 +17,7 @@ public class GameActivity extends AppCompatActivity {
 
     private TextureView textureView;
     private Thread renderLoopThread;
+    public static MediaPlayer gameOnsound ;
 
     private TextureView.SurfaceTextureListener textureListener = new TextureView.SurfaceTextureListener() {
 
@@ -64,6 +66,8 @@ public class GameActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.fragment_game);
         BitmapRepo.getInstance().setContext(this);
+
+        gameOnsound= MediaPlayer.create(GameActivity.this, R.raw.gameon);
         textureView = findViewById(R.id.texture_view);
         textureView.setSurfaceTextureListener(textureListener);
         textureView.setOnTouchListener(new View.OnTouchListener() {
@@ -74,6 +78,7 @@ public class GameActivity extends AppCompatActivity {
             }
         });
         goFullScreen();
+        gameOnsound.start();
     }
 
     // See https://developer.android.com/training/system-ui/status
