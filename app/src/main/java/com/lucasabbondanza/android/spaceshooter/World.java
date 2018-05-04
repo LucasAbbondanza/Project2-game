@@ -50,8 +50,15 @@ class World {
             else {
                 player.move(e.getX());
             }
-        } else {
+        } else if (e.getY() <= 1200){
             player.fire(!player.isShooting());
+            while(e.getActionMasked() == MotionEvent.ACTION_DOWN){
+                float x = player.getPosition().getX() + 50;
+                float y = player.getPosition().getY();
+                sprites.add(new Bullet(new Vec2d(x, y)));
+            }
+
+
         }
     }
 
