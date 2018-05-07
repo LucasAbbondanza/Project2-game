@@ -66,5 +66,10 @@ public abstract class Sprite {
 
     }
 
+    public boolean isDangerous() { return true; }
+
+    public boolean isDead() {
+        return false;
+    }
 
 }
