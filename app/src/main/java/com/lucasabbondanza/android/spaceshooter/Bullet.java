@@ -7,18 +7,18 @@ package com.lucasabbondanza.android.spaceshooter;
 public class Bullet extends Sprite{
 
     private static final int velocityX = 0;
-    private static final int velocityY = -1000;
+    private static final int velocityY = -4000;
+    private boolean dead;
 
     public Bullet(Vec2d v) {
         super(v);
+        dead = false;
         loadBitmaps();
     }
 
     private void loadBitmaps() {
         BitmapRepo r = BitmapRepo.getInstance();
         BitmapSequence s = new BitmapSequence();
-        s.addImage(r.getImage(R.drawable.pbullet), 0.1);
-        s.addImage(r.getImage(R.drawable.pbullet), 0.1);
         s.addImage(r.getImage(R.drawable.pbullet), 0.1);
         setBitmaps(s);
     }
@@ -33,17 +33,22 @@ public class Bullet extends Sprite{
         setPosition(getPosition().add(new Vec2d(velocityX*dt,velocityY*dt)));
     }
 
-    public void getBool(boolean b)
-    {
-        if(b = true) {
-            BitmapRepo r = BitmapRepo.getInstance();
-            BitmapSequence s = new BitmapSequence();
-            s.addImage(r.getImage(R.drawable.pbullet), 0.1);
-            setBitmaps(s);
-        }
-        else{
+    @Override
+    public boolean isDangerous() {
+        return false;
+    }
 
+    @Override
+    public void resolve(Collision collision, Sprite other) {
+        if(other instanceof EnemySprite) {
+            ((EnemySprite)other).makeDead();
         }
+        makeDead();
+    }
+
+    public void makeDead() {
+        if(!dead)
+            dead = true;
     }
 
 }
