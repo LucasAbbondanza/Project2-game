@@ -1,5 +1,7 @@
 package com.lucasabbondanza.android.spaceshooter;
 
+import android.view.TextureView;
+
 public class PlayerSprite extends Sprite {
 
     private int xVelocity;
@@ -9,9 +11,11 @@ public class PlayerSprite extends Sprite {
     private boolean shoot;
     private BitmapSequence deadSequence;
     private BitmapSequence gameoverSequence;
+    private TextureView view;
 
-    PlayerSprite(Vec2d v) {
+    PlayerSprite(Vec2d v, TextureView textureView) {
         super(v);
+        view = textureView;
         xVelocity = 0;
         yVelocity = -1000;
         deathTime = 0;
@@ -52,16 +56,13 @@ public class PlayerSprite extends Sprite {
         gameoverSequence.addImage(r.getImage(R.drawable.over_frame_07), 0.001);
         gameoverSequence.addImage(r.getImage(R.drawable.over_frame_08), 0.001);
         gameoverSequence.addImage(r.getImage(R.drawable.over_frame_09), 0.001);
-        gameoverSequence.addImage(r.getImage(R.drawable.over_frame_10), 0.001);
-        gameoverSequence.addImage(r.getImage(R.drawable.over_frame_11), 0.001);
+        //Removed frames that made the animation a bit awkward
         gameoverSequence.addImage(r.getImage(R.drawable.over_frame_12), 0.001);
         gameoverSequence.addImage(r.getImage(R.drawable.over_frame_13), 0.001);
         gameoverSequence.addImage(r.getImage(R.drawable.over_frame_14), 0.001);
         gameoverSequence.addImage(r.getImage(R.drawable.over_frame_15), 0.001);
-        gameoverSequence.addImage(r.getImage(R.drawable.over_frame_16), 0.001);
         gameoverSequence.addImage(r.getImage(R.drawable.over_frame_17), 0.001);
-        gameoverSequence.addImage(r.getImage(R.drawable.over_frame_18), 0.001);
-        gameoverSequence.addImage(r.getImage(R.drawable.over_frame_19_final), 100);
+        gameoverSequence.addImage(r.getImage(R.drawable.over_frame_19_final), 100000);
     }
 
     @Override
@@ -76,13 +77,13 @@ public class PlayerSprite extends Sprite {
         setPosition(getPosition().add(new Vec2d((float)(xVelocity*dt), (float)(yVelocity*dt))));
         if(position.getX() < 0)
             setPosition(new Vec2d(0, (int)position.getY()));
-        if(position.getX() > 1000)
-            setPosition(new Vec2d(1000, (int)position.getY()));
+        if(position.getX() > view.getWidth()-getBoundingBox().width())
+            setPosition(new Vec2d(view.getWidth()-getBoundingBox().width(), (int)position.getY()));
         if(dead) {
-            deathTime += dt;
-            if(deathTime > 2) {
+            deathTime++;
+            if(deathTime > 50) {
                 setBitmaps(gameoverSequence);
-                setPosition(new Vec2d(380, 1000));
+                setPosition(new Vec2d((view.getWidth()-getBoundingBox().width())/2, (view.getHeight()/2)-getBoundingBox().height()));
             }
         }
     }
@@ -92,7 +93,12 @@ public class PlayerSprite extends Sprite {
 
     @Override
     public void resolve(Collision collision, Sprite other) {
-        if (!dead) makeDead();
+        if (!dead && other.isDangerous() && !other.isDead()) {
+            makeDead();
+        }
+        if(other instanceof EnemySprite) {
+            ((EnemySprite)other).makeDead();
+        }
     }
 
     private void makeDead() {
@@ -104,14 +110,14 @@ public class PlayerSprite extends Sprite {
 
     public void move(float targetX) {
         if(!dead) {
-            if (position.getX() - targetX > -500 && position.getX() - targetX < 0) {
+            if (position.getX() - targetX > -getBoundingBox().width()/2 && position.getX() - targetX < 0) {
                 xVelocity = 0;
             } else {
                 if (position.getX() > targetX) {
-                    xVelocity = -5000;
+                    xVelocity = -3000;
                 }
                 if (position.getX() < targetX) {
-                    xVelocity = 5000;
+                    xVelocity = 3000;
                 }
             }
         }
