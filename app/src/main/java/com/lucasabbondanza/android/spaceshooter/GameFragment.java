@@ -1,5 +1,6 @@
 package com.lucasabbondanza.android.spaceshooter;
 
+import android.media.MediaPlayer;
 import android.support.v4.app.Fragment;
 import android.graphics.SurfaceTexture;
 import android.os.Bundle;
@@ -14,6 +15,7 @@ public class GameFragment extends Fragment {
 
     private TextureView textureView;
     private Thread renderLoopThread;
+    public static MediaPlayer gameMusic ;
     private Context context;
 
     private TextureView.SurfaceTextureListener textureListener = new TextureView.SurfaceTextureListener() {
@@ -65,17 +67,20 @@ public class GameFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(android.view.LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        Database.getDatabase().resetScore();
         View view = inflater.inflate(R.layout.fragment_game, container, false);
         BitmapRepo.getInstance().setContext(context);
         textureView = view.findViewById(R.id.texture_view);
         textureView.setSurfaceTextureListener(textureListener);
-        textureView.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                TouchEventQueue.getInstance().enqueue(event);
-                return true;
-            }
+        textureView.setOnTouchListener((v, event) -> {
+            TouchEventQueue.getInstance().enqueue(event);
+            return true;
         });
+        Database.getDatabase().resetScore();
+        if(Database.getDatabase().getMusicSetting()) {
+            gameMusic = MediaPlayer.create(context, R.raw.gameover);
+            gameMusic.start();
+        }
         return view;
     }
 

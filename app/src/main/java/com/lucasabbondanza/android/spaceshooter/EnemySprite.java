@@ -6,7 +6,7 @@ public class EnemySprite extends Sprite {
 
     private int xVelocity;
     private int yVelocity;
-    private double time;
+    private double deadTime;
     private boolean dead;
 
 
@@ -16,6 +16,7 @@ public class EnemySprite extends Sprite {
         xVelocity = 0;
         yVelocity = 1000;
         dead = false;
+        deadTime = 0;
     }
 
     private void loadBitmaps() {
@@ -48,6 +49,11 @@ public class EnemySprite extends Sprite {
     public void tick(double dt) {
         super.tick(dt);
         setPosition(getPosition().add(new Vec2d(xVelocity *dt, yVelocity *dt)));
+        if(dead) {
+            deadTime++;
+            if(deadTime > 3)
+                removeTime = true;
+        }
     }
 
     @Override
@@ -57,7 +63,8 @@ public class EnemySprite extends Sprite {
 
     @Override
     public void resolve(Collision collision, Sprite other) {
-        if (!dead) makeDead();
+        if(!dead && other instanceof BulletSprite && !other.isDead())
+            makeDead();
     }
 
     public void setVelocity(float x, float y) {

@@ -2,12 +2,12 @@ package com.lucasabbondanza.android.spaceshooter;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.TextureView;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 class World {
     private List<Sprite> sprites;
@@ -16,26 +16,27 @@ class World {
     private TextureView view;
 
     private int shootTick;
+    private int spawnTimer;
+    private float player_y;
 
     public World(TextureView textureView) {
         view = textureView;
         sprites = new ArrayList<>();
         delete = new ArrayList<>();
         shootTick = 0;
-        sprites.add(new EnemySprite(new Vec2d(100, 100)));
-        sprites.add(new EnemySprite(new Vec2d(1000, 100)));
-        //The player needs to be the last sprite added so it is drawn on top of most things
-        sprites.add(player = new PlayerSprite(new Vec2d(500,2000), view));
+        spawnTimer = 0;
+        sprites.add(player = new PlayerSprite(new Vec2d(500, 2000), view));
     }
 
     public void tick(double dt) {
         if(player.isShooting() && !player.isDead()) {
             shootTick++;
-            if(shootTick%2 == 0) {
-                Bullet pBullet = new Bullet(new Vec2d(0,0));
-                float x = player.getPosition().getX()+(player.getBoundingBox().width()/2)-pBullet.getBoundingBox().width();
+            if(shootTick%4 == 0) {
+                BulletSprite pBullet = new BulletSprite(new Vec2d(0,0));
+                float x = player.getPosition().getX()+(player.getBoundingBox().width()/2)-pBullet
+                        .getBoundingBox().width();
                 float y = player.getPosition().getY();
-                sprites.add(new Bullet(new Vec2d(x, y)));
+                sprites.add(new BulletSprite(new Vec2d(x, y)));
                 shootTick = 0;
             }
         }
@@ -47,7 +48,7 @@ class World {
         }
         resolveCollisions();
         for(Sprite s: sprites) {
-            if(s instanceof Bullet && s.isDead()) {
+            if(!s.isActive() && s.isDead()) {
                 delete.add(s);
             }else if(s.getPosition().getY() < player.getPosition().getY()-3000) {
                 delete.add(s);
@@ -55,10 +56,16 @@ class World {
                 delete.add(s);
             }
         }
+        spawnTimer++;
+        if (spawnTimer > 6 && !player.isDead()){
+            spawnTimer = 0;
+            spawn_star();
+            spawn_enemy();
+        }
         if(!delete.isEmpty() && !player.isDead()) {
             for (Sprite s : delete) {
-                Log.d("Sprite Cleanup", "Removing " + s);
-                sprites.remove(s);
+                if(s.isRemoveTime())
+                    sprites.remove(s);
             }
             delete.clear();
         }
@@ -91,12 +98,26 @@ class World {
         }
     }
 
+    private void spawn_enemy(){
+        Random rand = new Random();
+        float x = rand.nextInt(view.getWidth()-(int)(new EnemySprite(new Vec2d(0,0)).getBoundingBox().width()));
+        float y = player.getPosition().getY()-view.getHeight();
+        sprites.add(new EnemySprite(new Vec2d(x,  y)));
+    }
+
+    private void spawn_star(){
+        Random rand = new Random();
+        float x = rand.nextInt(view.getWidth()-(int)(new StarSprite(new Vec2d(0,0)).getBoundingBox().width()));
+        float y = player.getPosition().getY()-view.getHeight();
+        sprites.add(new StarSprite(new Vec2d(x,  y)));
+    }
+
     public void draw(Canvas c) {
         Bitmap bg = BitmapRepo.getInstance().getImage(R.drawable.galaxy1);
-        float y = player.getPosition().getY();
-        if(!player.isDead())
-            c.translate(0, -y+2000);
-        int backgroundNumber = (int)(y / bg.getHeight());
+        //if(!player.isDead())
+        player_y = player.getPosition().getY()+100;
+        c.translate(0, -player_y+view.getHeight()-200);
+        int backgroundNumber = (int)(player_y / bg.getHeight());
         c.drawBitmap(bg, 0, bg.getHeight()*(backgroundNumber-3),  null);
         c.drawBitmap(bg, 0, bg.getHeight()*(backgroundNumber-2),  null);
         c.drawBitmap(bg, 0, bg.getHeight()*(backgroundNumber-1),  null);

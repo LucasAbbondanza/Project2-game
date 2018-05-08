@@ -4,15 +4,14 @@ package com.lucasabbondanza.android.spaceshooter;
  * Created by caitlynpeace on 4/30/18.
  */
 
-public class Bullet extends Sprite{
+public class BulletSprite extends Sprite{
 
     private static final int velocityX = 0;
     private static final int velocityY = -4000;
     private boolean dead;
 
-    public Bullet(Vec2d v) {
+    public BulletSprite(Vec2d v) {
         super(v);
-        dead = false;
         loadBitmaps();
     }
 
@@ -42,6 +41,7 @@ public class Bullet extends Sprite{
     public void resolve(Collision collision, Sprite other) {
         if(other instanceof EnemySprite) {
             ((EnemySprite)other).makeDead();
+            Database.getDatabase().addScore(100);
         }
         makeDead();
     }

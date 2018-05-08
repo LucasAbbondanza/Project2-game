@@ -80,10 +80,10 @@ public class PlayerSprite extends Sprite {
         if(position.getX() > view.getWidth()-getBoundingBox().width())
             setPosition(new Vec2d(view.getWidth()-getBoundingBox().width(), (int)position.getY()));
         if(dead) {
+            shoot = false;
             deathTime++;
-            if(deathTime > 50) {
-                setBitmaps(gameoverSequence);
-                setPosition(new Vec2d((view.getWidth()-getBoundingBox().width())/2, (view.getHeight()/2)-getBoundingBox().height()));
+            if(deathTime > 5) {
+                removeTime = true;
             }
         }
     }
@@ -93,15 +93,22 @@ public class PlayerSprite extends Sprite {
 
     @Override
     public void resolve(Collision collision, Sprite other) {
-        if (!dead && other.isDangerous() && !other.isDead()) {
-            makeDead();
-        }
-        if(other instanceof EnemySprite) {
-            ((EnemySprite)other).makeDead();
+        if(other.isDangerous()) {
+            if (!dead && !other.isDead()) {
+                makeDead();
+            }
+            if (!(other instanceof BulletSprite)) {
+                other.makeDead();
+            }
+        } else {
+            if(other instanceof StarSprite) {
+                Database.getDatabase().addScore(300);
+                other.makeDead();
+            }
         }
     }
 
-    private void makeDead() {
+    public void makeDead() {
         dead = true;
         xVelocity = 0;
         yVelocity = 0;

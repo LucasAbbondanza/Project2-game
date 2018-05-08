@@ -42,7 +42,28 @@ public final class Database implements Serializable {
         database = new Database();
     }
 
+    public int getScore() {
+        return score;
+    }
+
+    public void addScore(int points) {
+        score += points;
+    }
+
+    public void resetScore() {
+        score = 0;
+    }
+
+    public boolean getMusicSetting() {
+        return music;
+    }
+
+    public void setMusicSetting(boolean setting) {
+        music = setting;
+    }
+
     private int score;
+    private boolean music;
 
     private Database() {
         score = 0;
@@ -66,5 +87,7 @@ public final class Database implements Serializable {
             }
         }
     }
+
+
 
 }
