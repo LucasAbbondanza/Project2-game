@@ -26,7 +26,8 @@ public class GameOverSprite extends Sprite {
         s.addImage(r.getImage(R.drawable.over_frame_14), 0.001);
         s.addImage(r.getImage(R.drawable.over_frame_15), 0.001);
         s.addImage(r.getImage(R.drawable.over_frame_17), 0.001);
-        s.addImage(r.getImage(R.drawable.over_frame_19_final), 100000);
+        s.addImage(r.getImage(R.drawable.over_frame_19), 1);
+        s.addImage(r.getImage(R.drawable.over_frame_20_final), 100000);
         setBitmaps(s);
     }
 

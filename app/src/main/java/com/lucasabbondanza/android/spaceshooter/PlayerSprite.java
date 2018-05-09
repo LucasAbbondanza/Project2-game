@@ -46,7 +46,7 @@ public class PlayerSprite extends Sprite {
         deadSequence.addImage(r.getImage(R.drawable.boom_frame_09), 0.01);
         deadSequence.addImage(r.getImage(R.drawable.boom_frame_10), 0.01);
         deadSequence.addImage(r.getImage(R.drawable.boom_frame_11), 0.01);
-        deadSequence.addImage(r.getImage(R.drawable.blank), 5);
+        deadSequence.addImage(r.getImage(R.drawable.blank), 10);
 
         setBitmaps(baseSequence);
     }
@@ -68,7 +68,7 @@ public class PlayerSprite extends Sprite {
         if(dead) {
             shoot = false;
             deadTime++;
-            if(deadTime > 10) {
+            if(deadTime > 30) {
                 removeTime = true;
             }
         }
