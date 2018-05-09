@@ -10,12 +10,12 @@ import android.view.View;
 import android.support.annotation.Nullable;
 import android.view.ViewGroup;
 import android.content.Context;
+import android.widget.Button;
 
 public class GameFragment extends Fragment {
 
     private TextureView textureView;
     private Thread renderLoopThread;
-    public static MediaPlayer gameMusic ;
     private Context context;
 
     private TextureView.SurfaceTextureListener textureListener = new TextureView.SurfaceTextureListener() {
@@ -77,10 +77,6 @@ public class GameFragment extends Fragment {
             return true;
         });
         Database.getDatabase().resetScore();
-        if(Database.getDatabase().getMusicSetting()) {
-            gameMusic = MediaPlayer.create(context, R.raw.gameover);
-            gameMusic.start();
-        }
         return view;
     }
 

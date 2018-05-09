@@ -17,6 +17,7 @@ public abstract class Sprite {
 
     public Sprite(Vec2d v) {
         dead = false;
+        removeTime = false;
         setPosition(v);
     }
 
@@ -79,6 +80,10 @@ public abstract class Sprite {
 
     public boolean isRemoveTime() {
         return removeTime;
+    }
+
+    public int getDeadTime() {
+        return 0;
     }
 
 }

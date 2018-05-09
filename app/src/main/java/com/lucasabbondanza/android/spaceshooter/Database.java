@@ -63,7 +63,7 @@ public final class Database implements Serializable {
     }
 
     private int score;
-    private boolean music;
+    private boolean music = true;
 
     private Database() {
         score = 0;

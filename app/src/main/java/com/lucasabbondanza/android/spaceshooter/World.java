@@ -1,9 +1,14 @@
 package com.lucasabbondanza.android.spaceshooter;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.media.AudioAttributes;
+import android.media.SoundPool;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.TextureView;
+import android.view.View;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,31 +16,58 @@ import java.util.Random;
 
 class World {
     private List<Sprite> sprites;
+    private List<BlueEnemySprite> blues;
     private List<Sprite> delete;
     private PlayerSprite player;
     private TextureView view;
+    private SoundPool soundPool;
+
+    int[] sounds;
 
     private int shootTick;
-    private int spawnTimer;
-    private float player_y;
+    private int enemySpawnTimer;
+    private int starSpawnTimer;
+    private int redSpawnTimer;
+    private int blueSpawnTimer;
+    private int enemiesSpawned;
 
     public World(TextureView textureView) {
         view = textureView;
         sprites = new ArrayList<>();
         delete = new ArrayList<>();
+        blues = new ArrayList<>();
         shootTick = 0;
-        spawnTimer = 0;
+        enemiesSpawned = 0;
+        enemySpawnTimer = 0;
+        redSpawnTimer = 0;
+        blueSpawnTimer = 0;
+        starSpawnTimer = 0;
         sprites.add(player = new PlayerSprite(new Vec2d(500, 2000), view));
+        AudioAttributes attributes = new AudioAttributes.Builder()
+                .setUsage(AudioAttributes.USAGE_GAME)
+                .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                .build();
+        soundPool = new SoundPool.Builder()
+                .setMaxStreams(4)
+                .setAudioAttributes(attributes)
+                .build();
+        sounds = new int[4];
+        sounds[0] = soundPool.load(view.getContext(), R.raw.fire, 1);
+        sounds[1] = soundPool.load(view.getContext(), R.raw.explosion, 1);
+        sounds[2] = soundPool.load(view.getContext(), R.raw.collect, 1);
+        sounds[3] = soundPool.load(view.getContext(), R.raw.opening, 1);
+        soundPool.play(sounds[3], 1, 1, 1, 0, 1);
     }
 
     public void tick(double dt) {
         if(player.isShooting() && !player.isDead()) {
             shootTick++;
-            if(shootTick%4 == 0) {
+            if(shootTick%6 == 0) {
                 BulletSprite pBullet = new BulletSprite(new Vec2d(0,0));
                 float x = player.getPosition().getX()+(player.getBoundingBox().width()/2)-pBullet
                         .getBoundingBox().width();
                 float y = player.getPosition().getY();
+                soundPool.play(sounds[0], 1, 1, 1, 0, 1);
                 sprites.add(new BulletSprite(new Vec2d(x, y)));
                 shootTick = 0;
             }
@@ -47,8 +79,40 @@ class World {
             s.tick(dt);
         }
         resolveCollisions();
+        enemySpawnTimer++;
+        starSpawnTimer++;
+        redSpawnTimer++;
+        blueSpawnTimer++;
+        if(!player.isDead()) {
+            if (enemySpawnTimer > 10) {
+                enemySpawnTimer = 0;
+                spawn_enemy();
+            }
+            if (starSpawnTimer > 30) {
+                starSpawnTimer = 0;
+                spawn_star();
+            }
+            if (redSpawnTimer > 60) {
+                redSpawnTimer = 0;
+                spawn_red();
+            }
+            if (blueSpawnTimer > 200) {
+                blueSpawnTimer = 0;
+                spawn_blue();
+            }
+        }
         for(Sprite s: sprites) {
-            if(!s.isActive() && s.isDead()) {
+            if(s instanceof BlueEnemySprite) {
+                blues.add((BlueEnemySprite) s);
+            }
+            if(s.isDead() && s.getDeadTime() < 1) {
+                if(s instanceof PlayerSprite || s instanceof EnemySprite) {
+                    soundPool.play(sounds[1], 1, 1, 1, 0, 1);
+                } else if(s instanceof StarSprite) {
+                    soundPool.play(sounds[2], 2, 2, 1, 0, 1);
+                }
+            }
+            if(s.isRemoveTime()) {
                 delete.add(s);
             }else if(s.getPosition().getY() < player.getPosition().getY()-3000) {
                 delete.add(s);
@@ -56,16 +120,24 @@ class World {
                 delete.add(s);
             }
         }
-        spawnTimer++;
-        if (spawnTimer > 6 && !player.isDead()){
-            spawnTimer = 0;
-            spawn_star();
-            spawn_enemy();
+        for(Sprite s: blues) {
+            if(blueSpawnTimer%20 == 0 && !player.isDead()) {
+                sprites.add(new EnemyBulletSprite(
+                        new Vec2d(s.getPosition().getX() + (s.getBoundingBox().width() / 2) - (new EnemyBulletSprite(new Vec2d(0, 0)).getBoundingBox().width() / 2),
+                                s.getPosition().getY())));
+                soundPool.play(sounds[0], 1, 1, 1, 0, 2);
+            }
         }
-        if(!delete.isEmpty() && !player.isDead()) {
+        blues.clear();
+        if(!delete.isEmpty()) {
             for (Sprite s : delete) {
-                if(s.isRemoveTime())
-                    sprites.remove(s);
+                if (s instanceof PlayerSprite) {
+                    GameOverSprite forSize = new GameOverSprite(new Vec2d(0, 0));
+                    sprites.add(new GameOverSprite(
+                            new Vec2d((view.getWidth()- forSize.getBoundingBox().width())/2,
+                                       player.getPosition().getY()-(view.getHeight()/2)+forSize.getBoundingBox().height())));
+                }
+                sprites.remove(s);
             }
             delete.clear();
         }
@@ -86,15 +158,21 @@ class World {
     }
 
     private void handleMotionEvent(MotionEvent e) {
-        if(e.getY() > view.getHeight()/2) {
-            if (e.getActionMasked() == MotionEvent.ACTION_UP)
-                player.stop();
-            else {
-                player.move(e.getX());
+        if(!player.isDead()) {
+            if (e.getY() > view.getHeight() / 2) {
+                if (e.getActionMasked() == MotionEvent.ACTION_UP)
+                    player.stop();
+                else {
+                    player.move(e.getX());
+                }
+            } else {
+                if (e.getActionMasked() == MotionEvent.ACTION_DOWN)
+                    player.fire(!player.isShooting());
             }
         } else {
-            if (e.getActionMasked() == MotionEvent.ACTION_DOWN)
-                player.fire(!player.isShooting());
+            if (e.getActionMasked() == MotionEvent.ACTION_DOWN) {
+
+            }
         }
     }
 
@@ -103,6 +181,30 @@ class World {
         float x = rand.nextInt(view.getWidth()-(int)(new EnemySprite(new Vec2d(0,0)).getBoundingBox().width()));
         float y = player.getPosition().getY()-view.getHeight();
         sprites.add(new EnemySprite(new Vec2d(x,  y)));
+        enemiesSpawned++;
+    }
+
+    private void spawn_red(){
+        Random rand = new Random();
+        float x = rand.nextInt(view.getWidth()-(int)(new EnemySprite(new Vec2d(0,0)).getBoundingBox().width()));
+        float y = player.getPosition().getY()-view.getHeight();
+        sprites.add(new RedEnemySprite(new Vec2d(x,  y), view, rand.nextBoolean()));
+        enemiesSpawned++;
+    }
+
+    private void spawn_blue(){
+        Log.d("spawning: ", "blue");
+        Random rand = new Random();
+        boolean side = rand.nextBoolean();
+        float x;
+        if(side) {
+            x = 0 - (new EnemySprite(new Vec2d(0, 0)).getBoundingBox().width());
+        } else {
+            x = view.getWidth();
+        }
+        float y = player.getPosition().getY()-view.getHeight() + (rand.nextInt(view.getHeight()/2) + 350);
+        sprites.add(new BlueEnemySprite(new Vec2d(x,  y), view, side));
+        enemiesSpawned++;
     }
 
     private void spawn_star(){
@@ -114,10 +216,8 @@ class World {
 
     public void draw(Canvas c) {
         Bitmap bg = BitmapRepo.getInstance().getImage(R.drawable.galaxy1);
-        //if(!player.isDead())
-        player_y = player.getPosition().getY()+100;
-        c.translate(0, -player_y+view.getHeight()-200);
-        int backgroundNumber = (int)(player_y / bg.getHeight());
+        c.translate(0, -(player.getPosition().getY()+100)+view.getHeight()-200);
+        int backgroundNumber = (int)((player.getPosition().getY()+100) / bg.getHeight());
         c.drawBitmap(bg, 0, bg.getHeight()*(backgroundNumber-3),  null);
         c.drawBitmap(bg, 0, bg.getHeight()*(backgroundNumber-2),  null);
         c.drawBitmap(bg, 0, bg.getHeight()*(backgroundNumber-1),  null);
