@@ -1,5 +1,6 @@
 package com.lucasabbondanza.android.spaceshooter;
 
+import android.app.Fragment;
 import android.graphics.Canvas;
 import android.view.TextureView;
 

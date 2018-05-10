@@ -2,6 +2,7 @@ package com.lucasabbondanza.android.spaceshooter;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.drawable.AnimationDrawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -42,6 +43,19 @@ public class MainMenuFragment extends Fragment {
                     .beginTransaction()
                     .replace(R.id.fragment_container, new GameFragment(), "Game")
                     .commit();
+        });
+
+        options_button.setOnClickListener((View v) -> {
+            Database.getDatabase().toggleMusicSetting();
+            if(Database.getDatabase().getMusicSetting())
+                options_button.setText(R.string.options_button_on);
+            else
+                options_button.setText(R.string.options_button_off);
+        });
+
+        scores_button.setOnClickListener((View v) -> {
+            Intent intent = new Intent(view.getContext(), ScoresActivity.class);
+            startActivity(intent);
         });
 
         endless_button.setOnClickListener((View v) -> {

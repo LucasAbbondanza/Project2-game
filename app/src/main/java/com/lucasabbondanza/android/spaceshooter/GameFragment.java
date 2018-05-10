@@ -1,5 +1,6 @@
 package com.lucasabbondanza.android.spaceshooter;
 
+import android.content.Intent;
 import android.media.MediaPlayer;
 import android.support.v4.app.Fragment;
 import android.graphics.SurfaceTexture;
@@ -15,6 +16,7 @@ import android.widget.Button;
 public class GameFragment extends Fragment {
 
     private TextureView textureView;
+    private TextureView menuButton;
     private Thread renderLoopThread;
     private Context context;
 
@@ -75,6 +77,12 @@ public class GameFragment extends Fragment {
         textureView.setOnTouchListener((v, event) -> {
             TouchEventQueue.getInstance().enqueue(event);
             return true;
+        });
+        menuButton = view.findViewById(R.id.back_to_menu);
+        menuButton.setOnClickListener((View v) -> {
+            Intent intent = getActivity().getIntent();
+            getActivity().finish();
+            startActivity(intent);
         });
         Database.getDatabase().resetScore();
         return view;

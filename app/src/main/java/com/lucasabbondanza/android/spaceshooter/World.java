@@ -1,12 +1,16 @@
 package com.lucasabbondanza.android.spaceshooter;
 
+import android.app.Fragment;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
 import android.media.AudioAttributes;
 import android.media.SoundPool;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.TextureView;
+import android.view.View;
 import android.widget.Toast;
 
 import java.io.File;
@@ -21,7 +25,7 @@ class World {
     private List<Sprite> delete;
     private PlayerSprite player;
     private GameMessageSprite message;
-    private TextureView view;
+    private final TextureView view;
     private SoundPool soundPool;
 
     int[] sounds;
@@ -41,6 +45,8 @@ class World {
     private boolean music;
     private boolean endless;
     private boolean win;
+    private boolean gameOver;
+    private float playerY;
 
     public World(TextureView textureView) {
         view = textureView;
@@ -60,6 +66,7 @@ class World {
         level = 0;
         timer = 0;
         win = false;
+        gameOver = false;
         music = Database.getDatabase().getMusicSetting();
         endless = Database.getDatabase().isEndless();
         sprites.add(player = new PlayerSprite(new Vec2d(500, 2000), view));
@@ -175,6 +182,7 @@ class World {
             for (Sprite s : delete) {
                 if (s instanceof PlayerSprite) {
                     //Game Over
+                    playerY = player.getPosition().getY();
                     GameMessageSprite forSize = new GameMessageSprite(new Vec2d(0, 0), view, 0);
                     sprites.add(message = new GameMessageSprite(
                             new Vec2d(0,
@@ -187,6 +195,7 @@ class World {
                         ex.printStackTrace();
                         Toast.makeText(view.getContext(), "Error saving data", Toast.LENGTH_SHORT);
                     }
+                    gameOver = true;
                 }
                 if(s.isDead() && !player.isDead()) {
                     if(s instanceof EnemySprite) {
@@ -228,10 +237,6 @@ class World {
             } else {
                 if (e.getActionMasked() == MotionEvent.ACTION_DOWN)
                     player.fire(!player.isShooting());
-            }
-        } else {
-            if (e.getActionMasked() == MotionEvent.ACTION_DOWN) {
-                //TODO switch back to main menu
             }
         }
     }
@@ -373,6 +378,7 @@ class World {
                 e.printStackTrace();
                 Toast.makeText(view.getContext(), "Error saving data", Toast.LENGTH_SHORT);
             }
+            gameOver = true;
         }
     }
 
@@ -385,9 +391,14 @@ class World {
         c.drawBitmap(bg, 0, bg.getHeight()*(backgroundNumber-1),  null);
         c.drawBitmap(bg, 0, bg.getHeight()*backgroundNumber,  null);
         c.drawBitmap(bg, 0, bg.getHeight()*(backgroundNumber+1),  null);
-        for(Sprite s: sprites) {
-            Log.d("Drawing", s + "");
+        for(Sprite s: sprites)
             s.draw(c);
+        if(gameOver) {
+            Paint paint = new Paint();
+            paint.setColor(Color.WHITE);
+            paint.setStyle(Paint.Style.FILL);
+            paint.setTextSize(100);
+            c.drawText("Score: " + Database.getDatabase().getScore(), 400, player.getPosition().getY() - 700, paint);
         }
     }
 }

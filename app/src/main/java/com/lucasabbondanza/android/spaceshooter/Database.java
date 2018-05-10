@@ -60,8 +60,8 @@ public final class Database implements Serializable {
         return music;
     }
 
-    public void setMusicSetting(boolean setting) {
-        music = setting;
+    public void toggleMusicSetting() {
+        music = !music;
     }
 
     public boolean isEndless() { return endless; }

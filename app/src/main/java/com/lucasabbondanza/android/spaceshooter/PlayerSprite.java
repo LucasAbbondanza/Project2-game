@@ -96,10 +96,10 @@ public class PlayerSprite extends Sprite {
     }
 
     public void makeDead() {
-        /*dead = true;
+        dead = true;
         xVelocity = 0;
         yVelocity = 0;
-        setBitmaps(deadSequence);*/
+        setBitmaps(deadSequence);
     }
 
     @Override

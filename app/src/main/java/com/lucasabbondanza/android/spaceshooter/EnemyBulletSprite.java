@@ -7,7 +7,7 @@ package com.lucasabbondanza.android.spaceshooter;
 public class EnemyBulletSprite extends Sprite{
 
     private static final int velocityX = 0;
-    private static final int velocityY = 100;
+    private static final int velocityY = 0;
     private boolean dead;
     private boolean removeTime;
 

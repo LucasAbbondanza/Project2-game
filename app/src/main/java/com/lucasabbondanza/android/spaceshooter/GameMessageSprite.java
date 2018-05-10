@@ -51,8 +51,7 @@ public class GameMessageSprite extends Sprite {
         gameOver.addImage(r.getImage(R.drawable.over_frame_14), 0.001);
         gameOver.addImage(r.getImage(R.drawable.over_frame_15), 0.001);
         gameOver.addImage(r.getImage(R.drawable.over_frame_17), 0.001);
-        gameOver.addImage(r.getImage(R.drawable.over_frame_19), 1);
-        gameOver.addImage(r.getImage(R.drawable.over_frame_20_final), 100000);
+        gameOver.addImage(r.getImage(R.drawable.over_frame_19), 100000);
 
         win = new BitmapSequence();
         win.addImage(r.getImage(R.drawable.winner), 100000);
