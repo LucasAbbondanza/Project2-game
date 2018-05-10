@@ -9,6 +9,7 @@ public class PlayerSprite extends Sprite {
     private int deadTime;
     private boolean dead;
     private boolean shoot;
+    private boolean done;
 
     private BitmapSequence baseSequence;
     private BitmapSequence deadSequence;
@@ -95,10 +96,10 @@ public class PlayerSprite extends Sprite {
     }
 
     public void makeDead() {
-        dead = true;
+        /*dead = true;
         xVelocity = 0;
         yVelocity = 0;
-        setBitmaps(deadSequence);
+        setBitmaps(deadSequence);*/
     }
 
     @Override
@@ -107,7 +108,7 @@ public class PlayerSprite extends Sprite {
     }
 
     public void move(float targetX) {
-        if(!dead) {
+        if(!dead && !done) {
             if (position.getX() - targetX > -getBoundingBox().width() && position.getX() - targetX < 0) {
                 xVelocity = 0;
                 setBitmaps(baseSequence);
@@ -120,6 +121,12 @@ public class PlayerSprite extends Sprite {
                 }
             }
         }
+    }
+
+    public void win() {
+        done = true;
+        yVelocity = 0;
+        xVelocity = 0;
     }
 
     public void move(double targetX) {
@@ -141,5 +148,7 @@ public class PlayerSprite extends Sprite {
     public boolean isDead() {
         return dead;
     }
+
+    public boolean isDone() { return done; }
 
 }

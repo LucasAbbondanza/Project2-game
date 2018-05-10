@@ -7,12 +7,24 @@ import android.view.View;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.Fragment;
 
+import java.io.File;
+import java.io.IOException;
+
 public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        File database = new File(getFilesDir(), "database");
+        try {
+            Database.load(database);
+        } catch (ClassNotFoundException e) {
+            Database.createSample();
+        } catch (IOException e) {
+            Database.createSample();
+        }
 
         FragmentManager fm = getSupportFragmentManager();
         Fragment fragment = fm.findFragmentById(R.id.fragment_container);

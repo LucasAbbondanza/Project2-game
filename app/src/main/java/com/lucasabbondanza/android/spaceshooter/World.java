@@ -1,6 +1,5 @@
 package com.lucasabbondanza.android.spaceshooter;
 
-import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.media.AudioAttributes;
@@ -8,8 +7,10 @@ import android.media.SoundPool;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.TextureView;
-import android.view.View;
+import android.widget.Toast;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -19,6 +20,7 @@ class World {
     private List<BlueEnemySprite> blues;
     private List<Sprite> delete;
     private PlayerSprite player;
+    private GameMessageSprite message;
     private TextureView view;
     private SoundPool soundPool;
 
@@ -29,7 +31,16 @@ class World {
     private int starSpawnTimer;
     private int redSpawnTimer;
     private int blueSpawnTimer;
+    private int bluesLeft;
     private int enemiesSpawned;
+    private int enemiesDestroyed;
+    private int starsSpawned;
+    private int starsGrabbed;
+    private int level;
+    private int timer;
+    private boolean music;
+    private boolean endless;
+    private boolean win;
 
     public World(TextureView textureView) {
         view = textureView;
@@ -39,9 +50,18 @@ class World {
         shootTick = 0;
         enemiesSpawned = 0;
         enemySpawnTimer = 0;
+        enemiesDestroyed = 0;
+        starsSpawned = 0;
+        starsGrabbed = 0;
         redSpawnTimer = 0;
         blueSpawnTimer = 0;
         starSpawnTimer = 0;
+        bluesLeft = 0;
+        level = 0;
+        timer = 0;
+        win = false;
+        music = Database.getDatabase().getMusicSetting();
+        endless = Database.getDatabase().isEndless();
         sprites.add(player = new PlayerSprite(new Vec2d(500, 2000), view));
         AudioAttributes attributes = new AudioAttributes.Builder()
                 .setUsage(AudioAttributes.USAGE_GAME)
@@ -56,18 +76,21 @@ class World {
         sounds[1] = soundPool.load(view.getContext(), R.raw.explosion, 1);
         sounds[2] = soundPool.load(view.getContext(), R.raw.collect, 1);
         sounds[3] = soundPool.load(view.getContext(), R.raw.opening, 1);
-        soundPool.play(sounds[3], 1, 1, 1, 0, 1);
+        if(music)
+            soundPool.play(sounds[3], 1, 1, 1, 0, 1);
     }
 
     public void tick(double dt) {
-        if(player.isShooting() && !player.isDead()) {
+        timer++;
+        if(player.isShooting() && !player.isDead() && !player.isDone()) {
             shootTick++;
             if(shootTick%6 == 0) {
                 BulletSprite pBullet = new BulletSprite(new Vec2d(0,0));
                 float x = player.getPosition().getX()+(player.getBoundingBox().width()/2)-pBullet
                         .getBoundingBox().width();
                 float y = player.getPosition().getY();
-                soundPool.play(sounds[0], 1, 1, 1, 0, 1);
+                if(Database.getDatabase().getMusicSetting())
+                    soundPool.play(sounds[0], 1, 1, 1, 0, 1);
                 sprites.add(new BulletSprite(new Vec2d(x, y)));
                 shootTick = 0;
             }
@@ -83,10 +106,11 @@ class World {
         starSpawnTimer++;
         redSpawnTimer++;
         blueSpawnTimer++;
-        if(!player.isDead()) {
+        if(endless && !player.isDead()) {
+            //Endless Mode
             if (enemySpawnTimer > 10) {
                 enemySpawnTimer = 0;
-                spawn_enemy();
+                spawn_gray();
             }
             if (starSpawnTimer > 30) {
                 starSpawnTimer = 0;
@@ -99,6 +123,24 @@ class World {
             if (blueSpawnTimer > 200) {
                 blueSpawnTimer = 0;
                 spawn_blue();
+            }
+        } else {
+            switch (level) {
+                case 0:
+                    GameMessageSprite forSize = new GameMessageSprite(new Vec2d(0, 0), view, 1);
+                    sprites.add(message = new GameMessageSprite(
+                            new Vec2d(0,
+                                    player.getPosition().getY()
+                                            -(view.getHeight())+forSize.getBoundingBox().height()), view, 1));
+                    level++;
+                case 1: level1();
+                        break;
+                case 2: level2();
+                        break;
+                case 3: level3();
+                        break;
+                case 4: win();
+                        break;
             }
         }
         for(Sprite s: sprites) {
@@ -132,11 +174,29 @@ class World {
         if(!delete.isEmpty()) {
             for (Sprite s : delete) {
                 if (s instanceof PlayerSprite) {
-                    GameOverSprite forSize = new GameOverSprite(new Vec2d(0, 0));
-                    sprites.add(new GameOverSprite(
-                            new Vec2d((view.getWidth()- forSize.getBoundingBox().width())/2,
-                                       player.getPosition().getY()-(view.getHeight()/2)+forSize.getBoundingBox().height())));
+                    //Game Over
+                    GameMessageSprite forSize = new GameMessageSprite(new Vec2d(0, 0), view, 0);
+                    sprites.add(message = new GameMessageSprite(
+                            new Vec2d(0,
+                                    player.getPosition().getY()
+                                            -(view.getHeight()/2)+forSize.getBoundingBox().height()), view, 0));
+                    Database.getDatabase().updateStats(false, enemiesDestroyed, starsGrabbed);
+                    try {
+                        Database.getDatabase().save(new File(view.getContext().getFilesDir(), "database"));
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                        Toast.makeText(view.getContext(), "Error saving data", Toast.LENGTH_SHORT);
+                    }
                 }
+                if(s.isDead() && !player.isDead()) {
+                    if(s instanceof EnemySprite) {
+                        enemiesDestroyed++;
+                    } else if (s instanceof StarSprite) {
+                        starsGrabbed++;
+                    }
+                }
+                if(s instanceof BlueEnemySprite)
+                    bluesLeft--;
                 sprites.remove(s);
             }
             delete.clear();
@@ -171,12 +231,12 @@ class World {
             }
         } else {
             if (e.getActionMasked() == MotionEvent.ACTION_DOWN) {
-
+                //TODO switch back to main menu
             }
         }
     }
 
-    private void spawn_enemy(){
+    private void spawn_gray(){
         Random rand = new Random();
         float x = rand.nextInt(view.getWidth()-(int)(new EnemySprite(new Vec2d(0,0)).getBoundingBox().width()));
         float y = player.getPosition().getY()-view.getHeight();
@@ -193,7 +253,6 @@ class World {
     }
 
     private void spawn_blue(){
-        Log.d("spawning: ", "blue");
         Random rand = new Random();
         boolean side = rand.nextBoolean();
         float x;
@@ -205,6 +264,7 @@ class World {
         float y = player.getPosition().getY()-view.getHeight() + (rand.nextInt(view.getHeight()/2) + 350);
         sprites.add(new BlueEnemySprite(new Vec2d(x,  y), view, side));
         enemiesSpawned++;
+        bluesLeft++;
     }
 
     private void spawn_star(){
@@ -212,6 +272,108 @@ class World {
         float x = rand.nextInt(view.getWidth()-(int)(new StarSprite(new Vec2d(0,0)).getBoundingBox().width()));
         float y = player.getPosition().getY()-view.getHeight();
         sprites.add(new StarSprite(new Vec2d(x,  y)));
+        starsSpawned++;
+    }
+
+    private void level1() {
+        if(!player.isDead() && timer > 80 && enemiesSpawned < 30) {
+            if (enemySpawnTimer > 10) {
+                enemySpawnTimer = 0;
+                spawn_gray();
+            }
+            if (starSpawnTimer > 30) {
+                starSpawnTimer = 0;
+                spawn_star();
+            }
+            if (enemiesSpawned > 29) {
+                GameMessageSprite forSize = new GameMessageSprite(new Vec2d(0, 0), view, 2);
+                sprites.add(message = new GameMessageSprite(
+                        new Vec2d(0,
+                                player.getPosition().getY()
+                                        -(view.getHeight())+forSize.getBoundingBox().height()), view, 2));
+                level++;
+                timer = 0;
+                enemySpawnTimer = 0;
+                starSpawnTimer = 0;
+                redSpawnTimer = 0;
+                blueSpawnTimer = 0;
+            }
+        }
+    }
+
+    private void level2() {
+        if(!player.isDead() && timer > 80 && enemiesSpawned < 100) {
+            if (enemySpawnTimer > 10) {
+                enemySpawnTimer = 0;
+                spawn_gray();
+            }
+            if (starSpawnTimer > 30) {
+                starSpawnTimer = 0;
+                spawn_star();
+            }
+            if (redSpawnTimer > 60) {
+                redSpawnTimer = 0;
+                spawn_red();
+            }
+            if (enemiesSpawned > 99) {
+                GameMessageSprite forSize = new GameMessageSprite(new Vec2d(0, 0), view, 3);
+                sprites.add(message = new GameMessageSprite(
+                        new Vec2d(0,
+                                player.getPosition().getY()
+                                        -(view.getHeight())+forSize.getBoundingBox().height()), view, 3));
+                level++;
+                timer = 0;
+                enemySpawnTimer = 0;
+                starSpawnTimer = 0;
+                redSpawnTimer = 0;
+                blueSpawnTimer = 0;
+            }
+        }
+    }
+
+    private void level3() {
+        if(!player.isDead() && timer > 80 && enemiesSpawned < 160) {
+            if (starSpawnTimer > 30) {
+                starSpawnTimer = 0;
+                spawn_star();
+            }
+            if (redSpawnTimer > 40) {
+                redSpawnTimer = 0;
+                spawn_red();
+            }
+            if (blueSpawnTimer > 100) {
+                blueSpawnTimer = 0;
+                spawn_blue();
+            }
+        }
+        if (bluesLeft < 1 && enemiesSpawned > 159) {
+            level++;
+            timer = 0;
+            enemySpawnTimer = 0;
+            starSpawnTimer = 0;
+            redSpawnTimer = 0;
+            blueSpawnTimer = 0;
+        }
+    }
+
+    private void win() {
+        if(!player.isDead() && !win && timer > 80) {
+            player.win();
+            win = true;
+            GameMessageSprite forSize = new GameMessageSprite(new Vec2d(0, 0), view, 4);
+            sprites.add(message = new GameMessageSprite(
+                    new Vec2d(0,
+                            player.getPosition().getY()
+                                    -(view.getHeight()/2)+forSize.getBoundingBox().height()), view, 4));
+            Database.getDatabase().addScore(10000);
+            Database.getDatabase().updateStats(true, enemiesDestroyed, starsGrabbed);
+            try {
+                Database.getDatabase().save(new File(view.getContext().getFilesDir(), "database"));
+            } catch (IOException e) {
+                e.printStackTrace();
+                Toast.makeText(view.getContext(), "Error saving data", Toast.LENGTH_SHORT);
+            }
+        }
     }
 
     public void draw(Canvas c) {
@@ -223,7 +385,9 @@ class World {
         c.drawBitmap(bg, 0, bg.getHeight()*(backgroundNumber-1),  null);
         c.drawBitmap(bg, 0, bg.getHeight()*backgroundNumber,  null);
         c.drawBitmap(bg, 0, bg.getHeight()*(backgroundNumber+1),  null);
-        for(Sprite s: sprites)
+        for(Sprite s: sprites) {
+            Log.d("Drawing", s + "");
             s.draw(c);
+        }
     }
 }

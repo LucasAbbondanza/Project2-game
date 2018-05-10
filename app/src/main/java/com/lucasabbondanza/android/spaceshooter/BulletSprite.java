@@ -54,6 +54,8 @@ public class BulletSprite extends Sprite{
             other.makeDead();
             if(other instanceof RedEnemySprite)
                 Database.getDatabase().addScore(200);
+            else if(other instanceof BlueEnemySprite)
+                Database.getDatabase().addScore(500);
             else
                 Database.getDatabase().addScore(100);
         }
