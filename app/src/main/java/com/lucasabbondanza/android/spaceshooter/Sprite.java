@@ -11,9 +11,13 @@ public abstract class Sprite {
 
     private BitmapSequence bitmaps;
     protected Vec2d position;
+    protected boolean dead;
+    protected boolean removeTime;
 
 
     public Sprite(Vec2d v) {
+        dead = false;
+        removeTime = false;
         setPosition(v);
     }
 
@@ -66,5 +70,20 @@ public abstract class Sprite {
 
     }
 
+    public boolean isDangerous() { return true; }
+
+    public boolean isDead() {
+        return dead;
+    }
+
+    public abstract void makeDead();
+
+    public boolean isRemoveTime() {
+        return removeTime;
+    }
+
+    public int getDeadTime() {
+        return 0;
+    }
 
 }

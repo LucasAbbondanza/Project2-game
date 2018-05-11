@@ -1,6 +1,8 @@
 package com.lucasabbondanza.android.spaceshooter;
 
-public class EnemySprite extends Sprite {
+import android.view.View;
+
+public class RedEnemySprite extends EnemySprite {
 
     private static BitmapSequence deadSequence;
 
@@ -8,21 +10,23 @@ public class EnemySprite extends Sprite {
     private int yVelocity;
     private int deadTime;
     private boolean dead;
+    private View view;
 
-
-    EnemySprite(Vec2d p) {
+    RedEnemySprite(Vec2d p, View view, boolean direction) {
         super(p);
+        yVelocity = -500;
+        if(direction)
+            xVelocity = 2000;
+        else
+            xVelocity = -2000;
+        this.view = view;
         loadBitmaps();
-        xVelocity = 0;
-        yVelocity = 1000;
-        dead = false;
-        deadTime = 0;
     }
 
     private void loadBitmaps() {
         BitmapRepo r = BitmapRepo.getInstance();
         BitmapSequence s = new BitmapSequence();
-        s.addImage(r.getImage(R.drawable.enemy), 0.1);
+        s.addImage(r.getImage(R.drawable.redenemy), 0.1);
 
         deadSequence = new BitmapSequence();
         deadSequence.addImage(r.getImage(R.drawable.boom_frame_00), 0.01);
@@ -41,14 +45,14 @@ public class EnemySprite extends Sprite {
         setBitmaps(s);
     }
 
-    private void path() {
-
-    }
-
     @Override
     public void tick(double dt) {
         super.tick(dt);
         setPosition(getPosition().add(new Vec2d(xVelocity *dt, yVelocity *dt)));
+        if(position.getX() < 0)
+            xVelocity = 2000;
+        if(position.getX() > view.getWidth()-getBoundingBox().width())
+            xVelocity = -2000;
         if(dead) {
             deadTime++;
             if(deadTime > 10)
@@ -57,18 +61,6 @@ public class EnemySprite extends Sprite {
     }
 
     @Override
-    public boolean isActive() {
-        return false;
-    }
-
-    @Override
-    public void resolve(Collision collision, Sprite other) {
-        if(!dead && other instanceof BulletSprite && !(other instanceof EnemyBulletSprite)) {
-            makeDead();
-            other.makeDead();
-        }
-    }
-
     public void makeDead() {
         dead = true;
         xVelocity = 0;

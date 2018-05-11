@@ -1,20 +1,26 @@
 package com.lucasabbondanza.android.spaceshooter;
 
+import android.view.TextureView;
+
 public class PlayerSprite extends Sprite {
 
     private int xVelocity;
     private int yVelocity;
-    private double deathTime;
+    private int deadTime;
     private boolean dead;
     private boolean shoot;
-    private BitmapSequence deadSequence;
-    private BitmapSequence gameoverSequence;
+    private boolean done;
 
-    PlayerSprite(Vec2d v) {
+    private BitmapSequence baseSequence;
+    private BitmapSequence deadSequence;
+    private TextureView view;
+
+    PlayerSprite(Vec2d v, TextureView textureView) {
         super(v);
+        view = textureView;
         xVelocity = 0;
         yVelocity = -1000;
-        deathTime = 0;
+        deadTime = 0;
         dead = false;
         shoot = false;
         loadBitmaps();
@@ -22,10 +28,12 @@ public class PlayerSprite extends Sprite {
 
     private void loadBitmaps() {
         BitmapRepo r = BitmapRepo.getInstance();
-        BitmapSequence s = new BitmapSequence();
-        s.addImage(r.getImage(R.drawable.player), 0.1);
-        setBitmaps(s);
 
+        baseSequence = new BitmapSequence();
+        baseSequence.addImage(r.getImage(R.drawable.player1), 0.1);
+        baseSequence.addImage(r.getImage(R.drawable.player2), 0.1);
+        baseSequence.addImage(r.getImage(R.drawable.player3), 0.1);
+        
         deadSequence = new BitmapSequence();
         deadSequence.addImage(r.getImage(R.drawable.boom_frame_00), 0.01);
         deadSequence.addImage(r.getImage(R.drawable.boom_frame_01), 0.01);
@@ -39,29 +47,9 @@ public class PlayerSprite extends Sprite {
         deadSequence.addImage(r.getImage(R.drawable.boom_frame_09), 0.01);
         deadSequence.addImage(r.getImage(R.drawable.boom_frame_10), 0.01);
         deadSequence.addImage(r.getImage(R.drawable.boom_frame_11), 0.01);
-        deadSequence.addImage(r.getImage(R.drawable.blank), 5);
+        deadSequence.addImage(r.getImage(R.drawable.blank), 10);
 
-        gameoverSequence = new BitmapSequence();
-        gameoverSequence.addImage(r.getImage(R.drawable.over_frame_00), 0.001);
-        gameoverSequence.addImage(r.getImage(R.drawable.over_frame_01), 0.001);
-        gameoverSequence.addImage(r.getImage(R.drawable.over_frame_02), 0.001);
-        gameoverSequence.addImage(r.getImage(R.drawable.over_frame_03), 0.001);
-        gameoverSequence.addImage(r.getImage(R.drawable.over_frame_04), 0.001);
-        gameoverSequence.addImage(r.getImage(R.drawable.over_frame_05), 0.001);
-        gameoverSequence.addImage(r.getImage(R.drawable.over_frame_06), 0.001);
-        gameoverSequence.addImage(r.getImage(R.drawable.over_frame_07), 0.001);
-        gameoverSequence.addImage(r.getImage(R.drawable.over_frame_08), 0.001);
-        gameoverSequence.addImage(r.getImage(R.drawable.over_frame_09), 0.001);
-        gameoverSequence.addImage(r.getImage(R.drawable.over_frame_10), 0.001);
-        gameoverSequence.addImage(r.getImage(R.drawable.over_frame_11), 0.001);
-        gameoverSequence.addImage(r.getImage(R.drawable.over_frame_12), 0.001);
-        gameoverSequence.addImage(r.getImage(R.drawable.over_frame_13), 0.001);
-        gameoverSequence.addImage(r.getImage(R.drawable.over_frame_14), 0.001);
-        gameoverSequence.addImage(r.getImage(R.drawable.over_frame_15), 0.001);
-        gameoverSequence.addImage(r.getImage(R.drawable.over_frame_16), 0.001);
-        gameoverSequence.addImage(r.getImage(R.drawable.over_frame_17), 0.001);
-        gameoverSequence.addImage(r.getImage(R.drawable.over_frame_18), 0.001);
-        gameoverSequence.addImage(r.getImage(R.drawable.over_frame_19_final), 100);
+        setBitmaps(baseSequence);
     }
 
     @Override
@@ -76,13 +64,13 @@ public class PlayerSprite extends Sprite {
         setPosition(getPosition().add(new Vec2d((float)(xVelocity*dt), (float)(yVelocity*dt))));
         if(position.getX() < 0)
             setPosition(new Vec2d(0, (int)position.getY()));
-        if(position.getX() > 1000)
-            setPosition(new Vec2d(1000, (int)position.getY()));
+        else if(position.getX() > view.getWidth()-getBoundingBox().width())
+            setPosition(new Vec2d(view.getWidth()-getBoundingBox().width(), (int)position.getY()));
         if(dead) {
-            deathTime += dt;
-            if(deathTime > 2) {
-                setBitmaps(gameoverSequence);
-                setPosition(new Vec2d(380, 1000));
+            shoot = false;
+            deadTime++;
+            if(deadTime > 30) {
+                removeTime = true;
             }
         }
     }
@@ -92,29 +80,53 @@ public class PlayerSprite extends Sprite {
 
     @Override
     public void resolve(Collision collision, Sprite other) {
-        if (!dead) makeDead();
+        if(other.isDangerous()) {
+            if (!other.isDead()) {
+                makeDead();
+            }
+            if (!(other instanceof BulletSprite)) {
+                other.makeDead();
+            }
+        } else {
+            if(other instanceof StarSprite) {
+                Database.getDatabase().addScore(300);
+                other.makeDead();
+            }
+        }
     }
 
-    private void makeDead() {
+    public void makeDead() {
         dead = true;
         xVelocity = 0;
         yVelocity = 0;
         setBitmaps(deadSequence);
     }
 
+    @Override
+    public int getDeadTime() {
+        return deadTime;
+    }
+
     public void move(float targetX) {
-        if(!dead) {
-            if (position.getX() - targetX > -500 && position.getX() - targetX < 0) {
+        if(!dead && !done) {
+            if (position.getX() - targetX > -getBoundingBox().width() && position.getX() - targetX < 0) {
                 xVelocity = 0;
+                setBitmaps(baseSequence);
             } else {
                 if (position.getX() > targetX) {
-                    xVelocity = -5000;
+                    xVelocity = -3000;
                 }
                 if (position.getX() < targetX) {
-                    xVelocity = 5000;
+                    xVelocity = 3000;
                 }
             }
         }
+    }
+
+    public void win() {
+        done = true;
+        yVelocity = 0;
+        xVelocity = 0;
     }
 
     public void move(double targetX) {
@@ -136,5 +148,7 @@ public class PlayerSprite extends Sprite {
     public boolean isDead() {
         return dead;
     }
+
+    public boolean isDone() { return done; }
 
 }

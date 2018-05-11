@@ -1,28 +1,41 @@
 package com.lucasabbondanza.android.spaceshooter;
 
-public class EnemySprite extends Sprite {
+import android.view.View;
 
+public class BlueEnemySprite extends EnemySprite {
+
+    private static BitmapSequence baseSequence;
     private static BitmapSequence deadSequence;
+    private static BitmapSequence damageSequence;
 
     private int xVelocity;
     private int yVelocity;
+    private int timer;
+    private int health;
     private int deadTime;
     private boolean dead;
+    private View view;
 
-
-    EnemySprite(Vec2d p) {
+    BlueEnemySprite(Vec2d p, View view, boolean direction) {
         super(p);
+        timer = 0;
+        health = 4;
+        yVelocity = -2000;
+        if(direction)
+            xVelocity = 2500;
+        else
+            xVelocity = -2500;
+        this.view = view;
         loadBitmaps();
-        xVelocity = 0;
-        yVelocity = 1000;
-        dead = false;
-        deadTime = 0;
     }
 
     private void loadBitmaps() {
         BitmapRepo r = BitmapRepo.getInstance();
-        BitmapSequence s = new BitmapSequence();
-        s.addImage(r.getImage(R.drawable.enemy), 0.1);
+        baseSequence = new BitmapSequence();
+        baseSequence.addImage(r.getImage(R.drawable.blueenemy), 0.1);
+
+        damageSequence = new BitmapSequence();
+        damageSequence.addImage(r.getImage(R.drawable.blueenemydamage), 0.1);
 
         deadSequence = new BitmapSequence();
         deadSequence.addImage(r.getImage(R.drawable.boom_frame_00), 0.01);
@@ -38,42 +51,39 @@ public class EnemySprite extends Sprite {
         deadSequence.addImage(r.getImage(R.drawable.boom_frame_10), 0.01);
         deadSequence.addImage(r.getImage(R.drawable.boom_frame_11), 0.01);
         deadSequence.addImage(r.getImage(R.drawable.blank), 10);
-        setBitmaps(s);
-    }
-
-    private void path() {
-
+        setBitmaps(baseSequence);
     }
 
     @Override
     public void tick(double dt) {
         super.tick(dt);
+        timer++;
         setPosition(getPosition().add(new Vec2d(xVelocity *dt, yVelocity *dt)));
+        if(timer > 10) {
+            if (position.getX() < 0)
+                xVelocity = 2500;
+            if (position.getX() > view.getWidth() - getBoundingBox().width())
+                xVelocity = -2500;
+        }
         if(dead) {
             deadTime++;
             if(deadTime > 10)
                 removeTime = true;
-        }
+        } else
+            setBitmaps(baseSequence);
     }
 
     @Override
-    public boolean isActive() {
-        return false;
-    }
-
-    @Override
-    public void resolve(Collision collision, Sprite other) {
-        if(!dead && other instanceof BulletSprite && !(other instanceof EnemyBulletSprite)) {
-            makeDead();
-            other.makeDead();
-        }
-    }
-
     public void makeDead() {
-        dead = true;
-        xVelocity = 0;
-        yVelocity = 0;
-        setBitmaps(deadSequence);
+        if(health < 1) {
+            dead = true;
+            xVelocity = 0;
+            yVelocity = 0;
+            setBitmaps(deadSequence);
+        } else {
+            health--;
+            setBitmaps(damageSequence);
+        }
     }
 
     @Override

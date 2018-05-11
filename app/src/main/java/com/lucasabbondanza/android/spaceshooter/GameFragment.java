@@ -1,5 +1,7 @@
 package com.lucasabbondanza.android.spaceshooter;
 
+import android.content.Intent;
+import android.media.MediaPlayer;
 import android.support.v4.app.Fragment;
 import android.graphics.SurfaceTexture;
 import android.os.Bundle;
@@ -9,10 +11,12 @@ import android.view.View;
 import android.support.annotation.Nullable;
 import android.view.ViewGroup;
 import android.content.Context;
+import android.widget.Button;
 
 public class GameFragment extends Fragment {
 
     private TextureView textureView;
+    private TextureView menuButton;
     private Thread renderLoopThread;
     private Context context;
 
@@ -65,17 +69,22 @@ public class GameFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(android.view.LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        Database.getDatabase().resetScore();
         View view = inflater.inflate(R.layout.fragment_game, container, false);
         BitmapRepo.getInstance().setContext(context);
         textureView = view.findViewById(R.id.texture_view);
         textureView.setSurfaceTextureListener(textureListener);
-        textureView.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                TouchEventQueue.getInstance().enqueue(event);
-                return true;
-            }
+        textureView.setOnTouchListener((v, event) -> {
+            TouchEventQueue.getInstance().enqueue(event);
+            return true;
         });
+        menuButton = view.findViewById(R.id.back_to_menu);
+        menuButton.setOnClickListener((View v) -> {
+            Intent intent = getActivity().getIntent();
+            getActivity().finish();
+            startActivity(intent);
+        });
+        Database.getDatabase().resetScore();
         return view;
     }
 

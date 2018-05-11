@@ -1,5 +1,6 @@
 package com.lucasabbondanza.android.spaceshooter;
 
+import android.app.Fragment;
 import android.graphics.Canvas;
 import android.view.TextureView;
 
@@ -10,7 +11,7 @@ class RenderLoop implements Runnable {
 
     public RenderLoop(TextureView textureView) {
         this.textureView = textureView;
-        world = new World();
+        world = new World(textureView);
     }
 
     @Override
